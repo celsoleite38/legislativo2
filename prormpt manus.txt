@@ -1,0 +1,22 @@
+voce quer ver o que tenho ja pronto para que possa atualizar?
+o que se tem necessidade eu serei o superusuario e somente eu que acessarei o admin parar cadastrar  os usuarios da secretaría. com username(jose.leite),  nome completo, email, e senha.
+estes usuarios terao de receber uma email de confirmação de senha com token para ativação.
+usuarios da secretaría cadastra os vereadores estes vereadores terão um numero maximo.
+Na qual será definido pelo admin. e sera necessario um upload da ata de lei organica onde esta a quantidade de vereadores.
+Estes usuario da secretría poderá cadastrar os vereadores com nome completo, nome de candidatura, partido foto e a ata de posse em PDF.
+tambem podera cadastrar novo projeto para ser votado •	'PL', •'PLO', •	'PLC', •'PEC'...
+o projeto em questao precisa de uma campo de autor onde pode ser cadastrado o nome do autor.
+os projetos cadastrados inIcia com status de EM PREPARAÇÃO, onde teremos 4 status
+EM PREPARAÇÃO, EM PAUTA, ABERTO E FECHADO.
+EM PREPARAÇÃO - esta cadastrado mas ainda no painel da secretaría.
+EM PAUTA - sera transferido para o painel do presidente da camara
+ABERTO - NO painel do presidente da camara, podera ser aberto para votação
+FECHADO - PODERA ser encerrado pelo presidente da camara ou automaticamente quando o tempo regulamentar de votação zerar.
+no painel do presidente da camara os projetos a serem votados. o tempo que sera para votação. ja mostrado com valor de tempo padrao e podera ser alterado de acordo com necessário.
+Quando acontecer de vereador ausente no ato da votação os usuarios da secretaria e ou presidente marca os ausentes e "se ja marcado pela secretaria a função fica inativa no painel do presidente.
+O presidente é quem ve a lista de projetos(em pauta) para serem votado e os libera para votação (aberto). e depois de aberto o botao Encerrar votação ativa no painel do presidente sendo mesmo encerrado pressionando o botao ou com encerramento do tempo de votação. ficando assim status de fechado.
+mostra o resultado da votação quantidade de "sim" "nao" e "abstençoes" e resultado final.
+o que tenho duvida se um ou mais vereadores estiverem ausente se o voto ja apresenta como abstenção!!
+No painel do vereador aparece o projeto a ser votado com botoes "sim" "nao" "abstneção"
+e depois de votado aparece o seu voto no projeto.
+No painel publico é exibido o projeto  a ser votado e o vereadores com nome foto partido o voto e quando nao vota status de "aguardando voto".
