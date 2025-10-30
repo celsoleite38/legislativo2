@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Gerenciar Vereadores{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gerenciamento de Vereadores</h1>
+        <a href="{% url 'legislativo:cadastrar_vereador' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Cadastrar Novo Vereador
+        </a>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Foto</th>
+                <th>Nome</th>
+                <th>Usuário</th>
+                <th>Partido</th>
+                <th>Cargo</th>
+                <th>Status</th>
+                <th>Ausência</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vereador in vereadores %}
+            <tr>
+                <td>
+                    {% if vereador.foto %}
+                        <img src="{{ vereador.foto.url }}" alt="{{ vereador.nome_completo }}" class="rounded-circle" width="40" height="40">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">{{ vereador.nome_completo|slice:":1" }}</div>
+                    {% endif %}
+                </td>
+                <td>{{ vereador.nome_completo }}</td>
+                <td>{{ vereador.user.username }}</td>
+                <td>{{ vereador.partido|default:"N/A" }}</td>
+                <td>{{ vereador.cargo_mesa|default:"Vereador Comum" }}</td>
+                <td>
+                    {% if vereador.ativo %}
+                        <span class="badge bg-success">Em Exercício</span>
+                    {% else %}
+                        <span class="badge bg-danger">Afastado</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="{% url 'legislativo:marcar_ausencia' vereador.user.id %}" class="d-inline">
+                        {% csrf_token %}
+                        {% if vereador.ausente_na_sessao %}
+                            <button type="submit" class="btn btn-sm btn-warning">Ausente</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-sm btn-outline-success">Presente</button>
+                        {% endif %}
+                    </form>
+                </td>
+                <td>
+                    <a href="{% url 'legislativo:editar_vereador' vereador.user.id %}" class="btn btn-sm btn-info text-white">Editar</a>
+                    <a href="{% url 'legislativo:remover_vereador' vereador.user.id %}" class="btn btn-sm btn-danger">Remover</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <a href="{% url 'legislativo:painel_secretaria' %}" class="btn btn-secondary mt-3">Voltar ao Painel da Secretaria</a>
+</div>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Placar de Votação - Câmara Municipal{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Placar Eletrônico da Sessão</h1>
+
+    {% if projeto_ativo %}
+        <div id="painel-projeto" data-projeto-id="{{ projeto_ativo.id }}" class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0 text-center">
+                    <span id="proj-tipo">{{ projeto_ativo.get_tipo_display }}</span> N° {{ projeto_ativo.id }}: 
+                    <span id="proj-titulo">{{ projeto_ativo.titulo }}</span>
+                </h2>
+            </div>
+            <div class="card-body">
+                <p class="text-center">Autor: <strong>{{ projeto_ativo.autor|default:"Não Informado" }}</strong></p>
+                <p class="text-center">Quórum Mínimo: <strong id="proj-quorum">{{ projeto_ativo.get_quorum_minimo_display }}</strong></p>
+                <p class="text-center" id="proj-descricao">{{ projeto_ativo.descricao|linebreaks }}</p>
+                <hr>
+
+                <div id="painel-status" class="text-center">
+                    <h3 id="status-atual" class="text-danger">STATUS: {{ projeto_ativo.get_status_display }}</h3>
+                    <h3 id="timer-display" class="text-muted"></h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Coluna de Resultados -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">Resultado Geral</h4>
+                    </div>
+                    <div class="card-body" id="placar-geral">
+                        <!-- Conteúdo do placar geral será injetado aqui -->
+                    </div>
+                    <div class="card-footer text-muted">
+                        Votos Computados: <span id="votos-contados">0</span> de <span id="total-vereadores">{{ total_vereadores }}</span> Vereadores
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna de Votos Individuais -->
+            <div class="col-md-8">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0">Votos Individuais</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="lista-votos" class="row">
+                            <!-- Votos individuais serão injetados aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            Nenhum projeto em pauta ou votação no momento. Aguardando a Mesa Diretora.
+        </div>
+    {% endif %}
+
+    <script>
+        const projetoId = document.getElementById('painel-projeto')?.dataset.projetoId;
+        let tempoRestante = 0;
+        let timerInterval;
+        let placarInterval;
+        const totalVereadoresEl = document.getElementById('total-vereadores');
+
+        function formatarVoto(voto) {
+            switch (voto) {
+                case 'SIM':
+                    return '<span class="badge bg-success">SIM</span>';
+                case 'NAO':
+                    return '<span class="badge bg-danger">NÃO</span>';
+                case 'ABSTER':
+                    return '<span class="badge bg-warning text-dark">ABSTENÇÃO</span>';
+                case 'AUSENTE':
+                    return '<span class="badge bg-secondary">AUSENTE</span>';
+                default:
+                    return '<span class="badge bg-light text-dark">AGUARDANDO VOTO</span>';
+            }
+        }
+
+        function atualizarTimer() {
+            const timerDisplay = document.getElementById('timer-display');
+            if (tempoRestante > 0) {
+                timerDisplay.textContent = `Tempo Restante: ${tempoRestante} segundos`;
+                tempoRestante--;
+            } else if (timerInterval) {
+                timerDisplay.textContent = "TEMPO ESGOTADO. Aguardando Encerramento.";
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function carregarResultados() {
+            if (!projetoId) return;
+
+            const apiUrl = `/api/resultados/${projetoId}/`; 
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status-atual').textContent = `STATUS: ${data.status}`;
+                    
+                    // 1. Atualiza Placar Geral
+                    document.getElementById('placar-geral').innerHTML = `
+                        <h5 class="text-success">SIM: ${data.sim}</h5>
+                        <h5 class="text-danger">NÃO: ${data.nao}</h5>
+                        <h5 class="text-warning">ABSTENÇÃO: ${data.abstencao}</h5>
+                    `;
+                    document.getElementById('votos-contados').textContent = data.votos_computados;
+                    totalVereadoresEl.textContent = data.total_vereadores;
+
+                    // 2. Atualiza Votos Individuais
+                    const listaVotosEl = document.getElementById('lista-votos');
+                    listaVotosEl.innerHTML = '';
+                    
+                    data.votos_individuais.forEach(voto => {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-6 mb-3';
+                        
+                        const fotoUrl = voto.foto_url ? voto.foto_url : '{% static "img/default_vereador.png" %}'; // Usar uma imagem default
+                        
+                        col.innerHTML = `
+                            <div class="d-flex align-items-center border p-2 rounded">
+                                <img src="${fotoUrl}" alt="${voto.nome}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0">${voto.nome}</h6>
+                                    <small class="text-muted">${voto.partido || 'S/P'}</small>
+                                </div>
+                                <div class="ms-auto">
+                                    ${formatarVoto(voto.voto)}
+                                </div>
+                            </div>
+                        `;
+                        listaVotosEl.appendChild(col);
+                    });
+                    
+                    // 3. Gerencia o Timer
+                    if (data.status === 'ABERTO' && data.tempo_restante > 0) {
+                        if (!timerInterval) {
+                            tempoRestante = data.tempo_restante;
+                            timerInterval = setInterval(atualizarTimer, 1000);
+                        }
+                    } else if (timerInterval) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        document.getElementById('timer-display').textContent = data.status === 'ABERTO' ? "TEMPO ESGOTADO" : "VOTAÇÃO ENCERRADA";
+                    }
+
+                    if (data.status === 'FECHADO') {
+                        clearInterval(placarInterval);
+                    }
+                })
+                .catch(error => console.error('Erro ao buscar resultados:', error));
+        }
+
+        if (projetoId) {
+            carregarResultados();
+            placarInterval = setInterval(carregarResultados, 3000);
+        }
+    </script>
+</div>
+{% endblock %}

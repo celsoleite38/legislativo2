@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Painel do Gerente de Votação{% endblock %}
+
+{% block content %}
+    <h1>Painel do Gerente de Votação (Mesa Diretora)</h1>
+
+    {% if projeto_ativo %}
+        <div style="border: 2px solid orange; padding: 15px; margin-bottom: 20px; background-color: #fff9e6;">
+            <h3>VOTAÇÃO ATIVA AGORA</h3>
+            <p>{{ projeto_ativo.get_tipo_display }} N° {{ projeto_ativo.id }}: <strong>{{ projeto_ativo.titulo }}</strong></p>
+            <p>Aberta desde: {{ projeto_ativo.abertura_voto|date:"H:i:s" }}</p>
+            
+            <a href="{% url 'legislativo:tela_principal' %}" target="_blank" style="margin-right: 15px;">
+                Ver Placar Público em Nova Aba
+            </a>
+
+            <a href="{% url 'legislativo:encerrar_votacao' projeto_ativo.id %}" onclick="return confirm('CONFIRMA O ENCERRAMENTO IMEDIATO da votação?');" style="background-color: #cc0000; color: white; padding: 10px; display: inline-block;">
+                ENCERRAR VOTAÇÃO MANUALMENTE
+            </a>
+        </div>
+    {% else %}
+        <h2>Projetos Prontos para Votação (Pauta)</h2>
+        {% if projetos_na_pauta %}
+            <table border="1" width="100%">
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Quórum</th>
+                    <th>Tempo</th>
+                    <th>Ação</th>
+                </tr>
+                {% for projeto in projetos_na_pauta %}
+                    <tr>
+                        <td>{{ projeto.id }}</td>
+                        <td>{{ projeto.titulo }}</td>
+                        <td>{{ projeto.get_quorum_minimo_display }}</td>
+                        <td>{{ projeto.tempo_limite_segundos }}s</td>
+                        <td>
+                            <a href="{% url 'legislativo:iniciar_votacao' projeto.id %}" onclick="return confirm('ATENÇÃO: Iniciar votação do projeto {{ projeto.id }}. CONFIRMA?');" style="color: green; font-weight: bold;">
+                                INICIAR VOTAÇÃO
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>Nenhum projeto em PREPARAÇÃO. A Secretaria precisa cadastrar novos projetos.</p>
+        {% endif %}
+    {% endif %}
+
+    <hr>
+
+    <h2>Últimas Votações Encerradas</h2>
+    <ul>
+    {% for projeto in projetos_encerrados %}
+        <li>
+            {{ projeto.get_tipo_display }} N° {{ projeto.id }}: 
+            <strong>{{ projeto.titulo }}</strong> - Encerrado em {{ projeto.abertura_voto|date:"d/m H:i" }}
+        </li>
+    {% endfor %}
+    </ul>
+    
+    <p><a href="{% url 'logout' %}">Sair do Sistema</a></p>
+{% endblock %}

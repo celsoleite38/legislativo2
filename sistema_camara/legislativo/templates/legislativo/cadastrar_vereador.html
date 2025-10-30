@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cadastrar Vereador{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Cadastrar Novo Vereador</h1>
+    <p class="lead">Vereadores Atuais: {{ vereadores_atuais }} / Limite: {{ limite }}</p>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <fieldset class="border p-3 mb-4">
+            <legend class="w-auto px-2">Dados de Acesso (Usuário)</legend>
+            {{ user_form.as_p }}
+        </fieldset>
+        
+        <fieldset class="border p-3 mb-4">
+            <legend class="w-auto px-2">Dados do Vereador (Perfil)</legend>
+            {{ profile_form.as_p }}
+        </fieldset>
+
+        <button type="submit" class="btn btn-success">Cadastrar</button>
+        <a href="{% url 'legislativo:gerenciar_vereadores' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

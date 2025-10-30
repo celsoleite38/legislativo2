@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Painel do Presidente{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Painel de Controle do Presidente</h1>
+    <p class="lead">Aqui você pode gerenciar a sessão de votação e o projeto ativo.</p>
+
+    {% if projeto_ativo %}
+        <div class="card border-primary mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Projeto em Votação: {{ projeto_ativo.titulo }}</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Tipo:</strong> {{ projeto_ativo.get_tipo_display }}</p>
+                <p><strong>Quórum Necessário:</strong> {{ projeto_ativo.get_quorum_minimo_display }}</p>
+                <p><strong>Status:</strong> <span class="badge bg-success">{{ projeto_ativo.get_status_display }}</span></p>
+                
+                <form method="post" action="{% url 'legislativo:encerrar_votacao' projeto_ativo.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Encerrar Votação</button>
+                </form>
+                
+                <a href="{% url 'legislativo:tela_principal' %}" class="btn btn-info text-white" target="_blank">Ver Placar Público</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Não há votação em andamento. Inicie uma votação a partir da pauta abaixo.
+        </div>
+    {% endif %}
+
+    <!-- Pauta de Projetos -->
+    <div class="card mt-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Pauta de Projetos</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for projeto in projetos_na_pauta %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ projeto }} (Status: {{ projeto.get_status_display }})</span>
+                    {% if projeto.status == 'PREPARACAO' %}
+                        <form method="post" action="{% url 'legislativo:iniciar_votacao' projeto.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-sm">Abrir Votação</button>
+                        </form>
+                    {% elif projeto.status == 'EM_PAUTA' %}
+                        <form method="post" action="{% url 'legislativo:iniciar_votacao' projeto.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning btn-sm">Iniciar Votação</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% empty %}
+                <li class="list-group-item">Não há projetos na pauta.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Gerenciamento de Ausências -->
+    <div class="card mt-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Gerenciamento de Ausências</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Marque os vereadores que estão ausentes na sessão atual. Vereadores marcados como ausentes não poderão votar.</p>
+            <ul class="list-group">
+                {% for vereador in vereadores_ativos %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ vereador.nome_completo }}</span>
+                        <form method="post" action="{% url 'legislativo:marcar_ausencia' vereador.user.id %}" class="d-inline">
+                            {% csrf_token %}
+                            {% if vereador.ausente_na_sessao %}
+                                <button type="submit" class="btn btn-sm btn-danger">Ausente</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-success">Presente</button>
+                            {% endif %}
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Projetos Encerrados -->
+    <div class="card mt-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Últimos Projetos Encerrados</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for projeto in projetos_encerrados %}
+                <li class="list-group-item">
+                    {{ projeto }} - Votos SIM: {{ projeto.votos_sim }} | NÃO: {{ projeto.votos_nao }}
+                </li>
+            {% empty %}
+                <li class="list-group-item">Nenhum projeto encerrado recentemente.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

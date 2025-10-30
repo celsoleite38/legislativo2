@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Ativação de Conta - Erro{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Erro na Ativação da Conta</h4>
+        <p>{{ mensagem }}</p>
+    </div>
+    
+    <a href="{% url 'login' %}" class="btn btn-secondary">Voltar para o Login</a>
+</div>
+{% endblock %}

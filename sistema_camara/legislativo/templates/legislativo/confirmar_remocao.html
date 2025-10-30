@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Confirmar Remoção{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Atenção! Confirmação de Remoção</h4>
+        <p>Você está prestes a remover o vereador <strong>{{ user.vereadorprofile.nome_completo }} ({{ user.username }})</strong>.</p>
+        <p>Esta ação é **irreversível** e deletará o usuário e seu perfil de vereador do sistema.</p>
+        <hr>
+        <p class="mb-0">Tem certeza que deseja continuar?</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sim, Remover Definitivamente</button>
+        <a href="{% url 'legislativo:gerenciar_vereadores' %}" class="btn btn-secondary">Não, Cancelar</a>
+    </form>
+</div>
+{% endblock %}

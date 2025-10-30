@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Limite Atingido{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-warning" role="alert">
+        <h4 class="alert-heading">Limite Máximo de Vereadores Atingido!</h4>
+        <p>O número máximo de vereadores permitido no sistema é de **{{ limite }}**.</p>
+        <p>Para aumentar o limite, o Superusuário deve acessar o painel de administração e alterar a **Configuração do Sistema**.</p>
+    </div>
+    
+    <a href="{% url 'legislativo:gerenciar_vereadores' %}" class="btn btn-secondary">Voltar</a>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Editar Vereador{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Editar Vereador: {{ user.username }}</h1>
+    <p>Nome Completo: <strong>{{ user.vereadorprofile.nome_completo }}</strong></p>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <fieldset class="border p-3 mb-4">
+            <legend class="w-auto px-2">Dados do Vereador (Perfil)</legend>
+            {{ profile_form.as_p }}
+            <small class="form-text text-muted">A senha e o nome de usuário devem ser alterados no painel de administração do Django, se necessário.</small>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        <a href="{% url 'legislativo:gerenciar_vereadores' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

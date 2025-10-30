@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Ativação de Conta - Sucesso{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-success" role="alert">
+        <h4 class="alert-heading">Conta Ativada com Sucesso!</h4>
+        <p>A conta do usuário **{{ user.username }}** foi ativada. Você já pode fazer login no sistema.</p>
+    </div>
+    
+    <a href="{% url 'login' %}" class="btn btn-primary">Fazer Login</a>
+</div>
+{% endblock %}

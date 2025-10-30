@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Painel do Vereador{% endblock %}
+
+{% block content %}
+    <h1>Bem-vindo(a), Vereador(a) {{ vereador_profile.nome_completo }}!</h1>
+    <p class="lead">Partido: {{ vereador_profile.partido|default:"Não Informado" }} | Cargo: {{ vereador_profile.cargo_mesa|default:"Vereador Comum" }}</p>
+
+    {% if vereador_profile.ausente_na_sessao %}
+    <div class="alert alert-danger" role="alert">
+        <strong>ATENÇÃO:</strong> Você está marcado como **AUSENTE** nesta sessão. Você não pode votar.
+    </div>
+    {% endif %}
+    
+
+    {% if is_gerente %}
+        <div style="border: 2px solid #0056b3; padding: 15px; margin-bottom: 20px; background-color: #e6f0ff;">
+            <h3>PAINEL DE GERENCIAMENTO DE SESSÃO</h3>
+            {% if projetos_na_pauta %}
+                <h4>Projetos na Pauta (PREPARAÇÃO)</h4>
+                <ul>
+                    {% for projeto in projetos_na_pauta %}
+                        <li>
+                            {{ projeto.titulo }} ({{ projeto.get_tipo_display }}) - 
+                            <a href="{% url 'legislativo:iniciar_votacao' projeto.id %}" onclick="return confirm('ATENÇÃO: Isso ZERARÁ votos anteriores e abrirá a votação por {{ projeto.tempo_limite_segundos }}s. CONFIRMA?');">
+                                [INICIAR VOTAÇÃO]
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Nenhum projeto em PREPARAÇÃO. Cadastre no Admin.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <hr>
+    
+    <h2>Votação Atual</h2>
+
+    {% if projeto_ativo %}
+        <div id="terminal-voto" data-projeto-id="{{ projeto_ativo.id }}">
+            <h3>Projeto: {{ projeto_ativo.titulo }}</h3>
+            <p>{{ projeto_ativo.descricao|linebreaks }}</p>
+            <p>Quórum Mínimo: <strong>{{ projeto_ativo.get_quorum_minimo_display }}</strong></p>
+            
+            <div id="status-voto">
+                {% if vereador_profile.ausente_na_sessao %}
+                    <div style="color: red; border: 1px solid red; padding: 10px; margin-top: 15px;">
+                        VOCÊ ESTÁ AUSENTE E NÃO PODE VOTAR.
+                    </div>
+                {% elif voto_vereador %}
+                    <div style="color: green; border: 1px solid green; padding: 10px; margin-top: 15px;">
+                        SEU VOTO FOI REGISTRADO: <strong>{{ voto_vereador.get_escolha_display }}</strong>.
+                    </div>
+                {% else %}
+                    <form action="{% url 'legislativo:votar' projeto_ativo.id %}" method="post" id="form-voto">
+                        {% csrf_token %}
+                        <p>Seu tempo para votar é de <span id="tempo-limite">{{ projeto_ativo.tempo_limite_segundos }}</span> segundos.</p>
+                        <button type="submit" name="escolha" value="SIM" class="btn btn-success btn-lg">SIM</button>
+                        <button type="submit" name="escolha" value="NAO" class="btn btn-danger btn-lg">NÃO</button>
+                        <button type="submit" name="escolha" value="ABSTER" class="btn btn-warning btn-lg">ABSTENÇÃO</button>
+                    </form>
+                    <h4 id="timer-vereador"></h4>
+                {% endif %}
+            </div>
+            
+            {% if is_gerente and projeto_ativo.status == 'ABERTO' %}
+                <hr>
+                <a href="{% url 'legislativo:encerrar_votacao' projeto_ativo.id %}" onclick="return confirm('CONFIRMA O ENCERRAMENTO IMEDIATO da votação?');" style="background-color: #cc0000; color: white; padding: 10px; display: inline-block;">
+                    [ENCERRAR VOTAÇÃO MANUALMENTE]
+                </a>
+            {% endif %}
+
+        </div>
+    {% else %}
+        <p>Nenhum projeto está aberto para votação. Aguarde o anúncio do Presidente.</p>
+    {% endif %}
+
+    <script>
+        const projetoAtivoId = document.getElementById('terminal-voto')?.dataset.projetoId;
+        const formVoto = document.getElementById('form-voto');
+        const timerVereador = document.getElementById('timer-vereador');
+        let timerIntervalVereador;
+
+        function atualizarStatusVereador() {
+            if (!projetoAtivoId) return;
+
+            fetch(`/api/resultados/${projetoAtivoId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    let tempoRestante = data.tempo_restante;
+                    
+                    if (data.status !== 'ABERTO' || tempoRestante === 0) {
+                        // Votação fechada ou tempo esgotado
+                        clearInterval(timerIntervalVereador);
+                        timerIntervalVereador = null;
+                        if (formVoto) {
+                            formVoto.style.display = 'none';
+                            timerVereador.textContent = "VOTAÇÃO ENCERRADA ou TEMPO ESGOTADO.";
+                        }
+                    } else if (formVoto && formVoto.style.display !== 'none' && !timerIntervalVereador) {
+                        // Inicia o timer se a votação estiver aberta e o vereador ainda não votou
+                        timerIntervalVereador = setInterval(() => {
+                            if (tempoRestante >= 0) {
+                                timerVereador.textContent = `Tempo Restante: ${tempoRestante} segundos`;
+                                tempoRestante--;
+                            } else {
+                                clearInterval(timerIntervalVereador);
+                                timerVereador.textContent = "TEMPO ESGOTADO. Voto bloqueado.";
+                                formVoto.style.display = 'none'; // Bloqueia o formulário
+                            }
+                        }, 1000);
+                    }
+                })
+                .catch(error => console.error('Erro ao buscar status:', error));
+        }
+
+        if (projetoAtivoId && formVoto && formVoto.style.display !== 'none') {
+            atualizarStatusVereador();
+            // Verifica o status periodicamente para reajustar o timer em caso de recarga
+            setInterval(atualizarStatusVereador, 5000); 
+        }
+    </script>
+{% endblock %}
