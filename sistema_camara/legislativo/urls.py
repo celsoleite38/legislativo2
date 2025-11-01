@@ -22,6 +22,8 @@ urlpatterns = [
     path('presidente/', views.painel_presidente, name='painel_presidente'), 
     path('votar/<int:projeto_id>/', views.votar, name='votar'),
     
+    path('colocar_em_pauta/<int:projeto_id>/', views.colocar_em_pauta, name='colocar_em_pauta'),
+    path('retirar_da_pauta/<int:projeto_id>/', views.retirar_da_pauta, name='retirar_da_pauta'),
     
     path('iniciar_votacao/<int:projeto_id>/', views.iniciar_votacao, name='iniciar_votacao'),
     path('encerrar_votacao/<int:projeto_id>/', views.encerrar_votacao, name='encerrar_votacao'),

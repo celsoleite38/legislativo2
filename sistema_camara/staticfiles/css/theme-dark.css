@@ -1,0 +1,262 @@
+/* static/css/theme-dark.css */
+:root {
+    --bg-primary: #0f0f23;
+    --bg-secondary: #1a1a2e;
+    --bg-card: #16213e;
+    --text-primary: #e2e8f0;
+    --text-secondary: #ffffff;
+    --accent-purple: #805ad5;
+    --accent-cyan: #0bc5ea;
+    --accent-pink: #ed64a6;
+    --accent-orange: #dd6b20;
+}
+
+body {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, #0a0a18 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.navbar {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, #0f3460 100%) !important;
+    border-bottom: 2px solid var(--accent-purple);
+    box-shadow: 0 4px 20px rgba(128, 90, 213, 0.3);
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid #2d3748;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(128, 90, 213, 0.2);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+    border-bottom: 1px solid var(--accent-purple);
+    border-radius: 16px 16px 0 0 !important;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-purple) 0%, #6b46c1 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(128, 90, 213, 0.5);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #0bc5ea 0%, #00a3c4 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+    color: white;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #0bc5ea 0%, #00a3c4 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+}
+
+.table {
+    color: var(--text-primary);
+    background: transparent;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(26, 26, 46, 0.6);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(128, 90, 213, 0.1) !important;
+}
+
+.alert {
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.3) 100%);
+    border-left: 4px solid #10b981;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.3) 100%);
+    border-left: 4px solid #ef4444;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.3) 100%);
+    border-left: 4px solid #f59e0b;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.3) 100%);
+    border-left: 4px solid #3b82f6;
+}
+
+.badge {
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 25px;
+    letter-spacing: 0.5px;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #0bc5ea 0%, #00a3c4 100%) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%) !important;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%) !important;
+}
+
+.badge.bg-secondary {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%) !important;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, var(--accent-purple) 0%, #6b46c1 100%) !important;
+}
+
+.form-control {
+    background: #2d3748;
+    border: 2px solid #4a5568;
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 12px 15px;
+}
+
+.form-control:focus {
+    background: #2d3748;
+    border-color: var(--accent-purple);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.3rem rgba(128, 90, 213, 0.25);
+}
+
+.form-select {
+    background: #2d3748;
+    border: 2px solid #4a5568;
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 12px 15px;
+}
+
+.form-select:focus {
+    background: #2d3748;
+    border-color: var(--accent-purple);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.3rem rgba(128, 90, 213, 0.25);
+}
+
+.list-group-item {
+    background: var(--bg-card);
+    border: 1px solid #2d3748;
+    color: var(--text-primary);
+}
+
+.list-group-item:hover {
+    background: rgba(128, 90, 213, 0.1);
+}
+
+/* Estilos específicos para elementos do sistema */
+.voting-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, #1e3a5f 100%);
+    border: 2px solid var(--accent-purple);
+}
+
+.voting-card .card-header {
+    background: linear-gradient(135deg, var(--accent-purple) 0%, #6b46c1 100%);
+}
+
+.projeto-status {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8em;
+}
+
+.status-preparacao {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+}
+
+.status-pauta {
+    background: linear-gradient(135deg, #0bc5ea 0%, #00a3c4 100%);
+}
+
+.status-aberto {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.status-fechado {
+    background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%);
+}
+
+/* Melhorias para responsividade */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-group .btn {
+        width: auto;
+    }
+}

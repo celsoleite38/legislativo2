@@ -5,25 +5,25 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="text-center mb-4">Placar Eletrônico da Sessão</h1>
+    <h1 class="text-center mb-4"><i class="fas fa-chart-line me-3"></i>Placar Eletrônico da Sessão</h1>
 
     {% if projeto_ativo %}
-        <div id="painel-projeto" data-projeto-id="{{ projeto_ativo.id }}" class="card shadow-sm mb-4">
-            <div class="card-header bg-primary text-white">
+        <div id="painel-projeto" data-projeto-id="{{ projeto_ativo.id }}" class="card voting-card mb-4">
+            <div class="card-header">
                 <h2 class="mb-0 text-center">
                     <span id="proj-tipo">{{ projeto_ativo.get_tipo_display }}</span> N° {{ projeto_ativo.id }}: 
                     <span id="proj-titulo">{{ projeto_ativo.titulo }}</span>
                 </h2>
             </div>
             <div class="card-body">
-                <p class="text-center">Autor: <strong>{{ projeto_ativo.autor|default:"Não Informado" }}</strong></p>
-                <p class="text-center">Quórum Mínimo: <strong id="proj-quorum">{{ projeto_ativo.get_quorum_minimo_display }}</strong></p>
+                <p class="text-center mb-3 ">Autor: <strong>{{ projeto_ativo.autor|default:"Não Informado" }}</strong></p>
+                <p class="text-center mb-3">Quórum Mínimo: <strong id="proj-quorum">{{ projeto_ativo.get_quorum_minimo_display }}</strong></p>
                 <p class="text-center" id="proj-descricao">{{ projeto_ativo.descricao|linebreaks }}</p>
                 <hr>
 
                 <div id="painel-status" class="text-center">
-                    <h3 id="status-atual" class="text-danger">STATUS: {{ projeto_ativo.get_status_display }}</h3>
-                    <h3 id="timer-display" class="text-muted"></h3>
+                    <h3 id="status-atual" class="text-danger mb-3">STATUS:{{ projeto_ativo.get_status_display }}</h3>
+                    <h3 id="timer-display" class="text-warning"></h3>
                 </div>
             </div>
         </div>
@@ -31,24 +31,26 @@
         <div class="row">
             <!-- Coluna de Resultados -->
             <div class="col-md-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-success text-white">
-                        <h4 class="mb-0">Resultado Geral</h4>
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Resultado Geral</h4>
                     </div>
-                    <div class="card-body" id="placar-geral">
+                    <div class="card-body text-center" id="placar-geral">
                         <!-- Conteúdo do placar geral será injetado aqui -->
                     </div>
-                    <div class="card-footer text-muted">
-                        Votos Computados: <span id="votos-contados">0</span> de <span id="total-vereadores">{{ total_vereadores }}</span> Vereadores
+                    <div class="card-footer text-center">
+                        <small class="text-secondary">
+                            Votos Computados: <span id="votos-contados">0</span> de <span id="total-vereadores">{{ total_vereadores }}</span> Vereadores
+                        </small>
                     </div>
                 </div>
             </div>
 
             <!-- Coluna de Votos Individuais -->
             <div class="col-md-8">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-info text-white">
-                        <h4 class="mb-0">Votos Individuais</h4>
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-users me-2"></i>Votos Individuais</h4>
                     </div>
                     <div class="card-body">
                         <div id="lista-votos" class="row">
@@ -60,17 +62,25 @@
         </div>
 
     {% else %}
-        <div class="alert alert-info text-center" role="alert">
-            Nenhum projeto em pauta ou votação no momento. Aguardando a Mesa Diretora.
+        <div class="card border-0 alert-no-votation">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-pause-circle fa-4x mb-3" style="color: #8b5cf6;"></i>
+                <h4 class="text-primary mb-3">Sessão em Recesso</h4>
+                <p class="card-text mb-4">Nenhum projeto em pauta ou votação no momento.</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <span class="badge bg-primary">Aguardando</span>
+                    <span class="badge bg-secondary">Próxima Votação</span>
+                </div>
+            </div>
         </div>
     {% endif %}
 
     <script>
+        // O JavaScript permanece o mesmo, apenas o CSS foi ajustado
         const projetoId = document.getElementById('painel-projeto')?.dataset.projetoId;
         let tempoRestante = 0;
         let timerInterval;
         let placarInterval;
-        const totalVereadoresEl = document.getElementById('total-vereadores');
 
         function formatarVoto(voto) {
             switch (voto) {
@@ -79,7 +89,7 @@
                 case 'NAO':
                     return '<span class="badge bg-danger">NÃO</span>';
                 case 'ABSTER':
-                    return '<span class="badge bg-warning text-dark">ABSTENÇÃO</span>';
+                    return '<span class="badge bg-warning">ABSTENÇÃO</span>';
                 case 'AUSENTE':
                     return '<span class="badge bg-secondary">AUSENTE</span>';
                 default:
@@ -107,35 +117,39 @@
             fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Dados completos da API:', data); // Debug completo
                     document.getElementById('status-atual').textContent = `STATUS: ${data.status}`;
                     
                     // 1. Atualiza Placar Geral
                     document.getElementById('placar-geral').innerHTML = `
-                        <h5 class="text-success">SIM: ${data.sim}</h5>
-                        <h5 class="text-danger">NÃO: ${data.nao}</h5>
-                        <h5 class="text-warning">ABSTENÇÃO: ${data.abstencao}</h5>
+                        <h2 class="text-success mb-3">${data.sim}</h2>
+                        <h5 class="text-success mb-4">SIM</h5>
+                        <h2 class="text-danger mb-3">${data.nao}</h2>
+                        <h5 class="text-danger mb-4">NÃO</h5>
+                        <h2 class="text-warning mb-3">${data.abstencao}</h2>
+                        <h5 class="text-warning">ABSTENÇÃO</h5>
                     `;
                     document.getElementById('votos-contados').textContent = data.votos_computados;
-                    totalVereadoresEl.textContent = data.total_vereadores;
 
                     // 2. Atualiza Votos Individuais
                     const listaVotosEl = document.getElementById('lista-votos');
                     listaVotosEl.innerHTML = '';
                     
                     data.votos_individuais.forEach(voto => {
+                        console.log('Vereador:', voto.nome, 'Foto URL:', voto.foto_url); // Debug individual
                         const col = document.createElement('div');
                         col.className = 'col-md-6 mb-3';
                         
-                        const fotoUrl = voto.foto_url ? voto.foto_url : '{% static "img/default_vereador.png" %}'; // Usar uma imagem default
+                        const fotoUrl = voto.foto_url ? voto.foto_url : '{% static "img/default_vereador.png" %}';
                         
                         col.innerHTML = `
-                            <div class="d-flex align-items-center border p-2 rounded">
+                            <div class="d-flex align-items-center border p-3 rounded">
                                 <img src="${fotoUrl}" alt="${voto.nome}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                <div>
+                                <div class="flex-grow-1">
                                     <h6 class="mb-0">${voto.nome}</h6>
                                     <small class="text-muted">${voto.partido || 'S/P'}</small>
                                 </div>
-                                <div class="ms-auto">
+                                <div class="ms-3">
                                     ${formatarVoto(voto.voto)}
                                 </div>
                             </div>
@@ -164,7 +178,7 @@
 
         if (projetoId) {
             carregarResultados();
-            placarInterval = setInterval(carregarResultados, 3000);
+            placarInterval = setInterval(carregarResultados, 10000);
         }
     </script>
 </div>

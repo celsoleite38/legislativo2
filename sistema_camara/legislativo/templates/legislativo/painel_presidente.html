@@ -5,99 +5,234 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1>Painel de Controle do Presidente</h1>
-    <p class="lead">Aqui você pode gerenciar a sessão de votação e o projeto ativo.</p>
+    <h1><i class="fas fa-gavel me-3"></i>Painel de Controle do Presidente</h1>
+    <p class="lead text-secondary">Aqui você pode gerenciar a sessão de votação e o projeto ativo.</p>
 
     {% if projeto_ativo %}
-        <div class="card border-primary mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Projeto em Votação: {{ projeto_ativo.titulo }}</h5>
+        <div class="card voting-card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-vote-yea me-2"></i>Projeto em Votação: {{ projeto_ativo.titulo }}</h5>
             </div>
             <div class="card-body">
-                <p><strong>Tipo:</strong> {{ projeto_ativo.get_tipo_display }}</p>
-                <p><strong>Quórum Necessário:</strong> {{ projeto_ativo.get_quorum_minimo_display }}</p>
-                <p><strong>Status:</strong> <span class="badge bg-success">{{ projeto_ativo.get_status_display }}</span></p>
-                
-                <form method="post" action="{% url 'legislativo:encerrar_votacao' projeto_ativo.id %}" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Encerrar Votação</button>
-                </form>
-                
-                <a href="{% url 'legislativo:tela_principal' %}" class="btn btn-info text-white" target="_blank">Ver Placar Público</a>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Tipo:</strong> {{ projeto_ativo.get_tipo_display }}</p>
+                        <p><strong>Quórum Necessário:</strong> {{ projeto_ativo.get_quorum_minimo_display }}</p>
+                        <p><strong>Status:</strong> <span class="badge status-aberto">{{ projeto_ativo.get_status_display }}</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'legislativo:encerrar_votacao' projeto_ativo.id %}" 
+                               class="btn btn-danger"
+                               onclick="return confirm('Encerrar a votação deste projeto?')">
+                                <i class="fas fa-stop-circle me-2"></i>Encerrar Votação
+                            </a>
+                            <a href="{% url 'legislativo:tela_principal' %}" class="btn btn-info" target="_blank">
+                                <i class="fas fa-external-link-alt me-2"></i>Ver Placar Público
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     {% else %}
-        <div class="alert alert-info" role="alert">
-            Não há votação em andamento. Inicie uma votação a partir da pauta abaixo.
+        <div class="card border-0 alert-no-votation">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-vote-yea fa-4x mb-3" style="color: #8b5cf6;"></i>
+                <h4 class="text-primary mb-3">Sessão em Recesso</h4>
+                <p class="card-text mb-4">Não há votação em andamento no momento.</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <span class="badge bg-primary">Aguardando</span>
+                    <span class="badge bg-secondary">Próxima Votação</span>
+                </div>
+            </div>
         </div>
     {% endif %}
 
-    <!-- Pauta de Projetos -->
+    <!-- Projetos em Pauta (Prontos para Votação) -->
     <div class="card mt-4">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0">Pauta de Projetos</h5>
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Projetos em Pauta (Prontos para Votação)</h5>
         </div>
-        <ul class="list-group list-group-flush">
-            {% for projeto in projetos_na_pauta %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>{{ projeto }} (Status: {{ projeto.get_status_display }})</span>
-                    {% if projeto.status == 'PREPARACAO' %}
-                        <form method="post" action="{% url 'legislativo:iniciar_votacao' projeto.id %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-success btn-sm">Abrir Votação</button>
-                        </form>
-                    {% elif projeto.status == 'EM_PAUTA' %}
-                        <form method="post" action="{% url 'legislativo:iniciar_votacao' projeto.id %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-warning btn-sm">Iniciar Votação</button>
-                        </form>
-                    {% endif %}
-                </li>
-            {% empty %}
-                <li class="list-group-item">Não há projetos na pauta.</li>
-            {% endfor %}
-        </ul>
+        <div class="card-body">
+            {% if projetos_em_pauta %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Tipo</th>
+                                <th>Autor</th>
+                                <th>Quórum</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for projeto in projetos_em_pauta %}
+                            <tr>
+                                <td><strong>{{ projeto.id }}</strong></td>
+                                <td>{{ projeto.titulo }}</td>
+                                <td><span class="badge bg-primary">{{ projeto.get_tipo_display }}</span></td>
+                                <td>{{ projeto.autor|default:"Não Informado" }}</td>
+                                <td><span class="badge bg-info">{{ projeto.get_quorum_minimo_display }}</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'legislativo:iniciar_votacao' projeto.id %}" 
+                                           class="btn btn-success btn-sm"
+                                           onclick="return confirm('Iniciar votação deste projeto?')">
+                                            <i class="fas fa-play me-1"></i>Abrir Votação
+                                        </a>
+                                        <a href="{% url 'legislativo:retirar_da_pauta' projeto.id %}" 
+                                           class="btn btn-secondary btn-sm"
+                                           onclick="return confirm('Retirar este projeto da pauta?')">
+                                            <i class="fas fa-undo me-1"></i>Retirar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-clipboard-check fa-3x text-secondary mb-3"></i>
+                    <p class="text-muted">Não há projetos em pauta no momento.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Projetos em Preparação (Aguardando Inclusão na Pauta) -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-edit me-2 "></i>Projetos em Preparação (Aguardando Inclusão na Pauta)</h5>
+        </div>
+        <div class="card-body">
+            {% if projetos_preparacao %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Tipo</th>
+                                <th>Autor</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for projeto in projetos_preparacao %}
+                            <tr>
+                                <td><strong>{{ projeto.id }}</strong></td>
+                                <td>{{ projeto.titulo }}</td>
+                                <td><span class="badge bg-primary">{{ projeto.get_tipo_display }}</span></td>
+                                <td>{{ projeto.autor|default:"Não Informado" }}</td>
+                                <td>
+                                    <span class="badge status-preparacao">{{ projeto.get_status_display }}</span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'legislativo:colocar_em_pauta' projeto.id %}" 
+                                       class="btn btn-primary btn-sm"
+                                       onclick="return confirm('Colocar este projeto em pauta?')">
+                                        <i class="fas fa-plus me-1"></i>Colocar em Pauta
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-folder-open fa-3x text-secondary mb-3"></i>
+                    <p class="text-muted">Não há projetos em preparação.</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Gerenciamento de Ausências -->
     <div class="card mt-4">
-        <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0">Gerenciamento de Ausências</h5>
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-user-clock me-2"></i>Gerenciamento de Ausências</h5>
         </div>
         <div class="card-body">
-            <p class="text-muted">Marque os vereadores que estão ausentes na sessão atual. Vereadores marcados como ausentes não poderão votar.</p>
-            <ul class="list-group">
+            <p class="text-secondary">Marque os vereadores que estão ausentes na sessão atual. Vereadores marcados como ausentes não poderão votar.</p>
+            <div class="list-group">
                 {% for vereador in vereadores_ativos %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>{{ vereador.nome_completo }}</span>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ vereador.nome_completo }}</strong>
+                            {% if vereador.cargo_mesa %}
+                                <span class="badge bg-info ms-2">{{ vereador.cargo_mesa.nome }}</span>
+                            {% endif %}
+                        </div>
                         <form method="post" action="{% url 'legislativo:marcar_ausencia' vereador.user.id %}" class="d-inline">
                             {% csrf_token %}
                             {% if vereador.ausente_na_sessao %}
-                                <button type="submit" class="btn btn-sm btn-danger">Ausente</button>
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-user-check me-1"></i>Marcar como Presente
+                                </button>
                             {% else %}
-                                <button type="submit" class="btn btn-sm btn-success">Presente</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-user-slash me-1"></i>Marcar como Ausente
+                                </button>
                             {% endif %}
                         </form>
-                    </li>
+                    </div>
                 {% endfor %}
-            </ul>
+            </div>
         </div>
     </div>
 
     <!-- Projetos Encerrados -->
     <div class="card mt-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Últimos Projetos Encerrados</h5>
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Últimos Projetos Encerrados</h5>
         </div>
-        <ul class="list-group list-group-flush">
-            {% for projeto in projetos_encerrados %}
-                <li class="list-group-item">
-                    {{ projeto }} - Votos SIM: {{ projeto.votos_sim }} | NÃO: {{ projeto.votos_nao }}
-                </li>
-            {% empty %}
-                <li class="list-group-item">Nenhum projeto encerrado recentemente.</li>
-            {% endfor %}
-        </ul>
+        <div class="card-body">
+            {% if projetos_encerrados %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Tipo</th>
+                                <th>Resultado</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for projeto in projetos_encerrados %}
+                            <tr>
+                                <td><strong>{{ projeto.id }}</strong></td>
+                                <td>{{ projeto.titulo }}</td>
+                                <td><span class="badge bg-primary">{{ projeto.get_tipo_display }}</span></td>
+                                <td>
+                                    <span class="badge 
+                                        {% if projeto.votos_sim > projeto.votos_nao %}bg-success
+                                        {% elif projeto.votos_nao > projeto.votos_sim %}bg-danger
+                                        {% else %}bg-warning{% endif %}">
+                                        SIM: {{ projeto.votos_sim }} | NÃO: {{ projeto.votos_nao }} | ABS: {{ projeto.votos_abstencao }}
+                                    </span>
+                                </td>
+                                <td>{{ projeto.abertura_voto|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-archive fa-3x text-secondary mb-3"></i>
+                    <p class="text-muted">Nenhum projeto encerrado recentemente.</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

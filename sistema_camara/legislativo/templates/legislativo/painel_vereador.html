@@ -3,7 +3,7 @@
 
 {% block content %}
     <h1>Bem-vindo(a), Vereador(a) {{ vereador_profile.nome_completo }}!</h1>
-    <p class="lead">Partido: {{ vereador_profile.partido|default:"Não Informado" }} | Cargo: {{ vereador_profile.cargo_mesa|default:"Vereador Comum" }}</p>
+    <p class="lead">Partido: {{ vereador_profile.partido|default:"Não Informado" }} | Cargo: {{ vereador_profile.cargo_mesa|default:"Vereador" }}</p>
 
     {% if vereador_profile.ausente_na_sessao %}
     <div class="alert alert-danger" role="alert">

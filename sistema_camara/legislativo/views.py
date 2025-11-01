@@ -8,7 +8,7 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from .models import Projeto, Voto, TokenAtivacao, VereadorProfile, Configuracao
 from .forms import ProjetoForm, UserCreationForm, VereadorProfileForm
-
+from django.contrib import messages
 TOTAL_VEREADORES = User.objects.count()
 
 def check_is_secretaria(user):
@@ -100,16 +100,16 @@ def painel_vereador(request):
 
 @login_required
 def painel_presidente(request):
-        # Apenas o presidente pode acessar este painel
+    # Permite acesso ao presidente e vice-presidente
     profile = getattr(request.user, 'vereadorprofile', None)
-    
     if not profile or not profile.is_presidente:
-        return HttpResponseForbidden("Acesso negado. Você não é o Presidente da Câmara.")
+        return HttpResponseForbidden("Acesso negado. Apenas o Presidente ou Vice-Presidente da Câmara podem acessar este painel.")
         
     projeto_ativo = Projeto.objects.filter(status='ABERTO').order_by('-abertura_voto').first()
     
-    # Projetos em pauta ou preparação
-    projetos_na_pauta = Projeto.objects.filter(status__in=['PREPARACAO', 'EM_PAUTA']).order_by('id')
+    # Separa projetos por status para melhor organização no template
+    projetos_preparacao = Projeto.objects.filter(status='PREPARACAO').order_by('id')
+    projetos_em_pauta = Projeto.objects.filter(status='EM_PAUTA').order_by('id')
     projetos_encerrados = Projeto.objects.filter(status='FECHADO').order_by('-abertura_voto')[:5]
     
     # Vereadores ativos e ausentes
@@ -117,9 +117,11 @@ def painel_presidente(request):
 
     context = {
         'projeto_ativo': projeto_ativo,
-        'projetos_na_pauta': projetos_na_pauta,
+        'projetos_preparacao': projetos_preparacao,  # NOVO
+        'projetos_em_pauta': projetos_em_pauta,      # NOVO
         'projetos_encerrados': projetos_encerrados,
-        'vereadores_ativos': vereadores_ativos
+        'vereadores_ativos': vereadores_ativos,
+        'cargo_usuario': profile.cargo_mesa.nome if profile.cargo_mesa else None
     }
     return render(request, 'legislativo/painel_presidente.html', context)
 
@@ -168,12 +170,61 @@ def check_is_gerente(user):
     return user.groups.filter(name='Gerente de Votação').exists()
 
 @login_required
-def iniciar_votacao(request, projeto_id):
+def colocar_em_pauta(request, projeto_id):
+    """Coloca um projeto em pauta (status: PREPARACAO -> EM_PAUTA)"""
     profile = getattr(request.user, 'vereadorprofile', None)
     if not profile or not profile.is_presidente:
-        return HttpResponseForbidden("Acesso negado. Apenas o Presidente pode iniciar a votação.")
+        return HttpResponseForbidden("Acesso negado. Apenas o Presidente ou Vice-Presidente podem colocar projetos em pauta.")
     
     projeto = get_object_or_404(Projeto, pk=projeto_id)
+    
+    # Só pode colocar em pauta se estiver em preparação
+    if projeto.status != 'PREPARACAO':
+        messages.error(request, f"Este projeto não pode ser colocado em pauta. Status atual: {projeto.get_status_display()}")
+        return redirect('legislativo:painel_presidente')
+    
+    # Atualiza status para EM_PAUTA
+    projeto.status = 'EM_PAUTA'
+    projeto.save()
+    
+    messages.success(request, f"Projeto '{projeto.titulo}' colocado em pauta com sucesso!")
+    return redirect('legislativo:painel_presidente')
+
+@login_required
+def retirar_da_pauta(request, projeto_id):
+    """Retira um projeto da pauta (status: EM_PAUTA -> PREPARACAO)"""
+    profile = getattr(request.user, 'vereadorprofile', None)
+    if not profile or not profile.is_presidente:
+        return HttpResponseForbidden("Acesso negado. Apenas o Presidente ou Vice-Presidente podem retirar projetos da pauta.")
+    
+    projeto = get_object_or_404(Projeto, pk=projeto_id)
+    
+    # Só pode retirar da pauta se estiver EM_PAUTA
+    if projeto.status != 'EM_PAUTA':
+        messages.error(request, f"Este projeto não pode ser retirado da pauta. Status atual: {projeto.get_status_display()}")
+        return redirect('legislativo:painel_presidente')
+    
+    # Atualiza status para PREPARACAO
+    projeto.status = 'PREPARACAO'
+    projeto.save()
+    
+    messages.success(request, f"Projeto '{projeto.titulo}' retirado da pauta.")
+    return redirect('legislativo:painel_presidente')
+
+
+@login_required
+def iniciar_votacao(request, projeto_id):
+    """Abre votação de um projeto (status: EM_PAUTA -> ABERTO)"""
+    profile = getattr(request.user, 'vereadorprofile', None)
+    if not profile or not profile.is_presidente:
+        return HttpResponseForbidden("Acesso negado. Apenas o Presidente ou Vice-Presidente podem iniciar a votação.")
+    
+    projeto = get_object_or_404(Projeto, pk=projeto_id)
+    
+    # Só pode iniciar votação se estiver EM_PAUTA
+    if projeto.status != 'EM_PAUTA':
+        messages.error(request, f"Só é possível iniciar votação de projetos que estão em pauta. Status atual: {projeto.get_status_display()}")
+        return redirect('legislativo:painel_presidente')
     
     # Zera votos de votações anteriores deste projeto
     Voto.objects.filter(projeto=projeto).delete()
@@ -183,20 +234,28 @@ def iniciar_votacao(request, projeto_id):
     projeto.abertura_voto = timezone.now()
     projeto.save()
     
-    return redirect('legislativo:painel_vereador')
-
+    messages.success(request, f"Votação do projeto '{projeto.titulo}' iniciada!")
+    return redirect('legislativo:painel_presidente')
 
 @login_required
 def encerrar_votacao(request, projeto_id):
+    """Encerra votação de um projeto (status: ABERTO -> FECHADO)"""
     profile = getattr(request.user, 'vereadorprofile', None)
     if not profile or not profile.is_presidente:
-        return HttpResponseForbidden("Acesso negado. Apenas o Presidente pode encerrar a votação.")
+        return HttpResponseForbidden("Acesso negado. Apenas o Presidente ou Vice-Presidente podem encerrar a votação.")
         
     projeto = get_object_or_404(Projeto, pk=projeto_id)
+    
+    # Só pode encerrar se estiver ABERTO
+    if projeto.status != 'ABERTO':
+        messages.error(request, f"Só é possível encerrar votação de projetos que estão abertos. Status atual: {projeto.get_status_display()}")
+        return redirect('legislativo:painel_presidente')
+    
     projeto.status = 'FECHADO'
     projeto.save()
     
-    return redirect('legislativo:painel_vereador')
+    messages.success(request, f"Votação do projeto '{projeto.titulo}' encerrada!")
+    return redirect('legislativo:painel_presidente')
 
 
 # --- 5. API de Resultados em Tempo Real ---
@@ -229,12 +288,17 @@ def resultados_api(request, projeto_id):
             status_voto = voto.escolha
         elif profile.ausente_na_sessao:
             status_voto = 'AUSENTE'
+        
+        foto_url = None
+        if profile.foto:
+            # Usar request.build_absolute_uri para URL absoluta
+            foto_url = request.build_absolute_uri(profile.foto.url)
             
         votos_individuais.append({
             'vereador_id': vereador.id,
             'nome': profile.nome_completo,
             'partido': profile.partido,
-            'foto_url': profile.foto.url if profile.foto.name else None,
+            'foto_url': foto_url,
             'voto': status_voto,
         })
         

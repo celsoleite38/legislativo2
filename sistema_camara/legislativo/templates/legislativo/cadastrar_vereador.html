@@ -5,24 +5,38 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1>Cadastrar Novo Vereador</h1>
-    <p class="lead">Vereadores Atuais: {{ vereadores_atuais }} / Limite: {{ limite }}</p>
+    <h1><i class="fas fa-user-plus me-2"></i>Cadastrar Novo Vereador</h1>
+    <p class="lead text-secondary">Vereadores Atuais: {{ vereadores_atuais }} / Limite: {{ limite }}</p>
     
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         
-        <fieldset class="border p-3 mb-4">
-            <legend class="w-auto px-2">Dados de Acesso (Usuário)</legend>
-            {{ user_form.as_p }}
-        </fieldset>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Dados de Acesso (Usuário)</h5>
+            </div>
+            <div class="card-body">
+                {{ user_form.as_p }}
+            </div>
+        </div>
         
-        <fieldset class="border p-3 mb-4">
-            <legend class="w-auto px-2">Dados do Vereador (Perfil)</legend>
-            {{ profile_form.as_p }}
-        </fieldset>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>Dados do Vereador (Perfil)</h5>
+            </div>
+            <div class="card-body">
+                {{ profile_form.as_p }}
+            </div>
+        </div>
 
-        <button type="submit" class="btn btn-success">Cadastrar</button>
-        <a href="{% url 'legislativo:gerenciar_vereadores' %}" class="btn btn-secondary">Cancelar</a>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="submit" class="btn btn-success me-md-2">
+                <i class="fas fa-save me-2"></i>Cadastrar Vereador
+            </button>
+            <a href="{% url 'legislativo:gerenciar_vereadores' %}" class="btn btn-secondary">
+                <i class="fas fa-times me-2"></i>Cancelar
+            </a>
+        </div>
     </form>
 </div>
 {% endblock %}

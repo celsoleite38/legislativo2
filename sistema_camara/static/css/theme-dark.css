@@ -1,0 +1,435 @@
+/* static/css/theme-dark.css */
+:root {
+    --bg-primary: #0f0f23;
+    --bg-secondary: #1a1a2e;
+    --bg-card: #16213e;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --accent-purple: #805ad5;
+    --accent-cyan: #0bc5ea;
+    --accent-pink: #ed64a6;
+    --accent-orange: #dd6b20;
+}
+
+body {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, #0a0a18 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.navbar {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, #0f3460 100%) !important;
+    border-bottom: 2px solid var(--accent-purple);
+    box-shadow: 0 4px 20px rgba(128, 90, 213, 0.3);
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid #2d3748;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(128, 90, 213, 0.2);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+    border-bottom: 1px solid var(--accent-purple);
+    border-radius: 16px 16px 0 0 !important;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-purple) 0%, #6b46c1 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(128, 90, 213, 0.5);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #0bc5ea 0%, #00a3c4 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+    color: white;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #0bc5ea 0%, #00a3c4 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 10px 20px;
+}
+
+.table {
+    color: var(--text-primary);
+    background: transparent;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(26, 26, 46, 0.6);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(128, 90, 213, 0.1) !important;
+}
+
+.alert {
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.3) 100%);
+    border-left: 4px solid #10b981;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.3) 100%);
+    border-left: 4px solid #ef4444;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.3) 100%);
+    border-left: 4px solid #f59e0b;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #f2f4f5 0%, #0f3460 100%);
+    border-left: 4px solid #3b82f6;
+    color: #e94545;
+}
+
+.badge {
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 25px;
+    letter-spacing: 0.5px;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #0bc5ea 0%, #00a3c4 100%) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%) !important;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%) !important;
+}
+
+.badge.bg-secondary {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%) !important;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, var(--accent-purple) 0%, #6b46c1 100%) !important;
+}
+
+.form-control {
+    background: #2d3748;
+    border: 2px solid #4a5568;
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 12px 15px;
+}
+
+.form-control:focus {
+    background: #2d3748;
+    border-color: var(--accent-purple);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.3rem rgba(128, 90, 213, 0.25);
+}
+
+.form-select {
+    background: #2d3748;
+    border: 2px solid #4a5568;
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 12px 15px;
+}
+
+.form-select:focus {
+    background: #2d3748;
+    border-color: var(--accent-purple);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.3rem rgba(128, 90, 213, 0.25);
+}
+
+.list-group-item {
+    background: var(--bg-card);
+    border: 1px solid #2d3748;
+    color: var(--text-primary);
+}
+
+.list-group-item:hover {
+    background: rgba(128, 90, 213, 0.1);
+}
+
+/* Estilos específicos para elementos do sistema */
+.voting-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, #1e3a5f 100%);
+    border: 2px solid var(--accent-purple);
+}
+
+.voting-card .card-header {
+    background: linear-gradient(135deg, var(--accent-purple) 0%, #6b46c1 100%);
+}
+
+.projeto-status {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8em;
+}
+
+.status-preparacao {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+}
+
+.status-pauta {
+    background: linear-gradient(135deg, #0bc5ea 0%, #00a3c4 100%);
+}
+
+.status-aberto {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.status-fechado {
+    background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%);
+}
+
+.alert-no-votation .card-body {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.2) 100%);
+    border-radius: 16px;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Melhorias para responsividade */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-group .btn {
+        width: auto;
+    }
+}
+
+/* theme-dark.css - ADICIONE ESTAS REGRAS */
+
+/* Corrigir cores do texto em geral */
+.text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+.text-muted {
+    color: #94a3b8 !important;
+}
+
+.text-dark {
+    color: var(--text-primary) !important;
+}
+
+/* Cores específicas para manter contraste */
+.text-primary {
+    color: #805ad5 !important;
+}
+
+.text-success {
+    color: #0bc5ea !important;
+}
+
+.text-danger {
+    color: #ed64a6 !important;
+}
+
+.text-warning {
+    color: #dd6b20 !important;
+}
+
+.text-info {
+    color: #0bc5ea !important;
+}
+
+/* Cores para elementos específicos */
+.lead {
+    color: var(--text-secondary) !important;
+}
+
+.card-text {
+    color: var(--text-secondary) !important;
+}
+
+.card-body p {
+    color: var(--text-secondary) !important;
+}
+
+.card-body strong {
+    color: var(--text-primary) !important;
+}
+
+/* Melhorar contraste dos badges com texto escuro */
+.badge.bg-light {
+    color: #1a1a2e !important;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%) !important;
+}
+
+.badge.bg-warning {
+    color: #1a1a2e !important;
+}
+
+/* Estilos para o placar */
+.placar-numero {
+    font-size: 2.5rem;
+    font-weight: 800;
+}
+
+.placar-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Melhorar legibilidade das tabelas */
+.table {
+    --bs-table-color: var(--text-primary);
+    --bs-table-bg: transparent;
+    --bs-table-border-color: #2d3748;
+}
+
+.table th {
+    color: var(--text-primary);
+    border-color: #2d3748;
+    font-weight: 600;
+}
+
+.table td {
+    color: var(--text-secondary);
+    border-color: #2d3748;
+}
+
+/* Estilos para formulários */
+.form-text {
+    color: var(--text-secondary) !important;
+}
+
+.form-label {
+    color: var(--text-primary) !important;
+    font-weight: 600;
+}
+
+/* Melhorar contraste dos placeholders */
+.form-control::placeholder {
+    color: #718096 !important;
+}
+
+.form-select {
+    color: var(--text-primary) !important;
+}
+
+/* Ajustes para listas */
+.list-group-item {
+    color: var(--text-primary);
+}
+
+.list-group-item strong {
+    color: var(--text-primary);
+}
+
+/* theme-dark.css - ADICIONE ESTAS REGRAS ESPECÍFICAS */
+
+/* Estilos específicos para os cards dos vereadores na lista de votos */
+#lista-votos .d-flex.align-items-center {
+    background: rgba(26, 26, 46, 0.6);
+    border: 1px solid #2d3748 !important;
+    transition: all 0.3s ease;
+}
+
+#lista-votos .d-flex.align-items-center:hover {
+    background: rgba(128, 90, 213, 0.1);
+    border-color: #805ad5 !important;
+    transform: translateY(-1px);
+}
+
+/* Textos dentro dos cards dos vereadores */
+#lista-votos h6.mb-0 {
+    color: var(--text-primary) !important;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+#lista-votos .text-muted {
+    color: #94a3b8 !important;
+    font-size: 0.85rem;
+}
+
+/* Ajustes para os badges de voto */
+#lista-votos .badge {
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+}
+
+/* Garantir que todos os textos dentro dos cards estejam visíveis */
+#lista-votos .flex-grow-1 h6,
+#lista-votos .flex-grow-1 small {
+    color: var(--text-primary) !important;
+}
+
+/* Estilo específico para o container da lista de votos */
+#lista-votos .row {
+    color: var(--text-primary);
+}

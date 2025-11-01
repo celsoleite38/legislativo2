@@ -14,7 +14,7 @@ class ProjetoForm(forms.ModelForm):
         # A Secretaria só precisa cadastrar estes campos. 
         # O 'status' inicial será sempre 'PREPARACAO' (definido no Model).
         # O 'abertura_voto' será definido pelo Gerente.
-        fields = ['titulo', 'autor', 'tipo', 'descricao', 'quorum_minimo', 'tempo_limite_segundos']
+        fields = [ 'titulo', 'autor', 'tipo', 'descricao', 'quorum_minimo', 'tempo_limite_segundos']
         
         widgets = {
             'descricao': forms.Textarea(attrs={'rows': 4}),
