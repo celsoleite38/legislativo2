@@ -64,7 +64,7 @@ def painel_vereador(request):
     # 2. Redirecionamento do Presidente
     profile = getattr(request.user, 'vereadorprofile', None)
     if profile and profile.is_presidente:
-        return redirect('legislativo:painel_vereador')
+        return redirect('legislativo:painel_presidente')
         
     # --- Lógica do Vereador Comum ---
     
@@ -102,6 +102,7 @@ def painel_vereador(request):
 def painel_presidente(request):
         # Apenas o presidente pode acessar este painel
     profile = getattr(request.user, 'vereadorprofile', None)
+    
     if not profile or not profile.is_presidente:
         return HttpResponseForbidden("Acesso negado. Você não é o Presidente da Câmara.")
         
@@ -307,23 +308,24 @@ def cadastrar_vereador(request):
         profile_form = VereadorProfileForm(request.POST, request.FILES)
         
         if user_form.is_valid() and profile_form.is_valid():
-            # 1. Cria o Usuário
-            user = user_form.save(commit=False)
-            user.set_password(user_form.cleaned_data['password'])
-            user.is_staff = True # Vereadores precisam de acesso ao admin para gerenciar o próprio perfil (se necessário)
-            user.save()
-            
-            # 2. Cria o Perfil do Vereador
-            profile = profile_form.save(commit=False)
-            profile.user = user
-            profile.save()
-            
-            # 3. Adiciona ao grupo 'Vereadores' (se existir)
-            # from django.contrib.auth.models import Group
-            # group, created = Group.objects.get_or_create(name='Vereadores')
-            # user.groups.add(group)
-            
-            return redirect('legislativo:gerenciar_vereadores')
+            try:
+                # 1. Cria o Usuário - O UserCreationForm já trata a senha automaticamente
+                user = user_form.save(commit=False)
+                user.is_staff = True # Vereadores precisam de acesso ao admin para gerenciar o próprio perfil
+                user.save()
+                
+                # 2. Cria o Perfil do Vereador
+                profile = profile_form.save(commit=False)
+                profile.user = user
+                profile.save()
+                
+                return redirect('legislativo:gerenciar_vereadores')
+                
+            except Exception as e:
+                # Adicione tratamento de erro para debug
+                print(f"Erro ao cadastrar vereador: {e}")
+                # Você pode adicionar uma mensagem de erro aqui
+                
     else:
         user_form = UserCreationForm()
         profile_form = VereadorProfileForm()
