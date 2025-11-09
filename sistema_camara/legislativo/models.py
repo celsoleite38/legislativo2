@@ -101,12 +101,19 @@ class Projeto(models.Model):
     )
     
     # Status de Votação
-    STATUS_VOTACAO = (
+    STATUS_CHOICES = [
         ('PREPARACAO', 'Em Preparação'),
         ('EM_PAUTA', 'Em Pauta'),
         ('ABERTO', 'Aberto para Votação'),
         ('FECHADO', 'Votação Encerrada'),
-    )
+    ]
+    
+    RESULTADO_CHOICES = [
+        ('APROVADO', 'Aprovado'),
+        ('REPROVADO', 'Reprovado'),
+        ('EMPATADO', 'Empatado'),
+        ('PENDENTE', 'Pendente'),
+    ]
     
     # Quórum Necessário
     QUORUM_NECESSARIO = (
@@ -120,7 +127,8 @@ class Projeto(models.Model):
     tipo = models.CharField(max_length=10, choices=TIPO_PROPOSICAO, default='PL')
     descricao = models.TextField()
     
-    status = models.CharField(max_length=20, choices=STATUS_VOTACAO, default='PREPARACAO')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PREPARACAO')
+    resultado_final = models.CharField(max_length=20, choices=RESULTADO_CHOICES, default='PENDENTE', verbose_name="Resultado Final")
     quorum_minimo = models.CharField(max_length=20, choices=QUORUM_NECESSARIO, default='SIMPLES')
     
     # Controle de Tempo
@@ -140,8 +148,49 @@ class Projeto(models.Model):
     def votos_nao(self):
         return self.voto_set.filter(escolha='NAO').count()
     
-    def votos_abstencao(self):
+    def votos_abster(self):
         return self.voto_set.filter(escolha='ABSTER').count()
+        
+    def calcular_resultado(self):
+        """
+        Calcula o resultado final do projeto (Aprovado, Reprovado, Empatado).
+        A regra é: Maioria Simples (SIM > NAO).
+        O Presidente só vota em caso de empate (Voto de Minerva).
+        """
+        votos_sim = self.votos_sim()
+        votos_nao = self.votos_nao()
+        
+        # 1. Quórum Mínimo (Maioria Simples)
+        # Para a maioria simples, o quórum é o número de vereadores presentes.
+        # Aqui, vamos considerar apenas os votos válidos (SIM ou NAO) para a maioria.
+        
+        # 2. Voto de Minerva (Presidente)
+        # Se houver empate, o voto do Presidente decide.
+        if votos_sim == votos_nao:
+            # Busca o voto do Presidente
+            try:
+                presidente_profile = VereadorProfile.objects.get(cargo_mesa__nome='Presidente')
+                voto_presidente = self.voto_set.get(vereador=presidente_profile.user)
+                
+                if voto_presidente.escolha == 'SIM':
+                    return 'APROVADO'
+                elif voto_presidente.escolha == 'NAO':
+                    return 'REPROVADO'
+                else:
+                    # Presidente se absteve ou não votou, o resultado é Empatado
+                    return 'EMPATADO'
+            except VereadorProfile.DoesNotExist:
+                # Não há presidente cadastrado, resultado é Empatado
+                return 'EMPATADO'
+            except Voto.DoesNotExist:
+                # Presidente não votou, resultado é Empatado
+                return 'EMPATADO'
+        
+        # 3. Maioria Simples
+        elif votos_sim > votos_nao:
+            return 'APROVADO'
+        else: # votos_nao > votos_sim
+            return 'REPROVADO'
 
 class Voto(models.Model):
     ESCOLHAS_VOTO = (

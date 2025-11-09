@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from .models import Projeto, Voto, TokenAtivacao, VereadorProfile, Configuracao
 from .forms import ProjetoForm, UserCreationForm, VereadorProfileForm
 from django.contrib import messages
-TOTAL_VEREADORES = User.objects.count()
+# TOTAL_VEREADORES = User.objects.count() # Removido para evitar erro de importação antes da migração
 
 def check_is_secretaria(user):
     return user.groups.filter(name='Secretaria Geral').exists()
@@ -43,12 +43,16 @@ def ativar_conta_secretaria(request, token):
     return render(request, 'legislativo/ativacao_sucesso.html', {'user': user})
 
 def tela_principal(request):
+    from .models import VereadorProfile
     # Pega o projeto que está ATIVO ou o último FECHADO
     projeto = Projeto.objects.filter(status__in=['ABERTO', 'FECHADO']).order_by('-abertura_voto').first()
     
+    # Calcula o total de vereadores ativos
+    total_vereadores = VereadorProfile.objects.filter(user__is_active=True).count()
+    
     context = {
         'projeto_ativo': projeto,
-        'total_vereadores': TOTAL_VEREADORES
+        'total_vereadores': total_vereadores
     }
     return render(request, 'legislativo/tela_principal.html', context)
 
@@ -63,7 +67,11 @@ def painel_vereador(request):
         
     # 2. Redirecionamento do Presidente
     profile = getattr(request.user, 'vereadorprofile', None)
-    if profile and profile.is_presidente:
+    
+    # Verifica se o usuário é um vereador e se o cargo dele é EXATAMENTE 'Presidente'
+    is_presidente_cargo = profile and profile.cargo_mesa and profile.cargo_mesa.nome == 'Presidente'
+    
+    if profile and is_presidente_cargo:
         return redirect('legislativo:painel_presidente')
         
     # --- Lógica do Vereador Comum ---
@@ -102,8 +110,11 @@ def painel_vereador(request):
 def painel_presidente(request):
     # Permite acesso ao presidente e vice-presidente
     profile = getattr(request.user, 'vereadorprofile', None)
-    if not profile or not profile.is_presidente:
-        return HttpResponseForbidden("Acesso negado. Apenas o Presidente ou Vice-Presidente da Câmara podem acessar este painel.")
+    # Verifica se o usuário é um vereador e se o cargo dele é EXATAMENTE 'Presidente'
+    is_presidente_cargo = profile and profile.cargo_mesa and profile.cargo_mesa.nome == 'Presidente'
+    
+    if not is_presidente_cargo:
+        return HttpResponseForbidden("Acesso negado. Apenas o Presidente da Câmara pode acessar este painel.")
         
     projeto_ativo = Projeto.objects.filter(status='ABERTO').order_by('-abertura_voto').first()
     
@@ -241,10 +252,25 @@ def iniciar_votacao(request, projeto_id):
 def encerrar_votacao(request, projeto_id):
     """Encerra votação de um projeto (status: ABERTO -> FECHADO)"""
     profile = getattr(request.user, 'vereadorprofile', None)
-    if not profile or not profile.is_presidente:
-        return HttpResponseForbidden("Acesso negado. Apenas o Presidente ou Vice-Presidente podem encerrar a votação.")
+    # Verifica se o usuário é o Presidente (a verificação de cargo já está na view painel_presidente)
+    is_presidente_cargo = profile and profile.cargo_mesa and profile.cargo_mesa.nome == 'Presidente'
+    
+    if not is_presidente_cargo:
+        return HttpResponseForbidden("Acesso negado. Apenas o Presidente da Câmara pode encerrar votações.")
         
     projeto = get_object_or_404(Projeto, pk=projeto_id)
+    
+    # 1. Calcula o resultado antes de fechar
+    resultado = projeto.calcular_resultado()
+    
+    # 2. Fecha e salva o resultado
+    projeto.status = 'FECHADO'
+    projeto.resultado_final = resultado
+    projeto.save()
+    
+    messages.success(request, f"Votação do projeto '{projeto.titulo}' encerrada. Resultado: {projeto.get_resultado_final_display()}")
+    
+    return redirect('legislativo:painel_presidente')
     
     # Só pode encerrar se estiver ABERTO
     if projeto.status != 'ABERTO':
@@ -274,6 +300,11 @@ def resultados_api(request, projeto_id):
             tempo_restante = 0 
             
     votos_computados = projeto.voto_set.count()
+
+    # Contagem de votos
+    votos_sim = projeto.voto_set.filter(escolha='SIM').count()
+    votos_nao = projeto.voto_set.filter(escolha='NAO').count()
+    votos_abster = projeto.voto_set.filter(escolha='ABSTER').count()
 
     # Lista de vereadores e seus votos (para o placar público)
     vereadores_profiles = VereadorProfile.objects.filter(ativo=True).select_related('user').order_by('nome_completo')
@@ -308,11 +339,12 @@ def resultados_api(request, projeto_id):
     return JsonResponse({
         'id': projeto.id,
         'titulo': projeto.titulo,
-        'status': projeto.status,
+        'status': projeto.get_status_display(),
+        'resultado_final': projeto.get_resultado_final_display(), # Novo campo
         'tempo_restante': tempo_restante,
-        'sim': projeto.votos_sim(),
-        'nao': projeto.votos_nao(),
-        'abstencao': projeto.votos_abstencao(),
+        'votos_sim': votos_sim,
+        'votos_nao': votos_nao,
+        'votos_abster': votos_abster,
         'votos_computados': votos_computados,
         'total_vereadores': TOTAL_VEREADORES,
         'votos_individuais': votos_individuais,

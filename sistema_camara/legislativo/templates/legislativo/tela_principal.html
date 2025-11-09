@@ -122,14 +122,15 @@
                     
                     // 1. Atualiza Placar Geral
                     document.getElementById('placar-geral').innerHTML = `
-                        <h2 class="text-success mb-3">${data.sim}</h2>
+                        <h2 class="text-success mb-3">${data.votos_sim}</h2>
                         <h5 class="text-success mb-4">SIM</h5>
-                        <h2 class="text-danger mb-3">${data.nao}</h2>
+                        <h2 class="text-danger mb-3">${data.votos_nao}</h2>
                         <h5 class="text-danger mb-4">NÃO</h5>
-                        <h2 class="text-warning mb-3">${data.abstencao}</h2>
+                        <h2 class="text-warning mb-3">${data.votos_abster}</h2>
                         <h5 class="text-warning">ABSTENÇÃO</h5>
                     `;
                     document.getElementById('votos-contados').textContent = data.votos_computados;
+                    document.getElementById('total-vereadores').textContent = data.total_vereadores;
 
                     // 2. Atualiza Votos Individuais
                     const listaVotosEl = document.getElementById('lista-votos');
@@ -159,14 +160,22 @@
                     
                     // 3. Gerencia o Timer
                     if (data.status === 'ABERTO' && data.tempo_restante > 0) {
+                        // Se a votação está aberta e há tempo restante
                         if (!timerInterval) {
+                            // Inicia o timer se ele ainda não estiver rodando
                             tempoRestante = data.tempo_restante;
                             timerInterval = setInterval(atualizarTimer, 1000);
                         }
+                        // Garante que o display mostre o tempo restante da API na primeira carga
+                        document.getElementById('timer-display').textContent = `Tempo Restante: ${data.tempo_restante} segundos`;
                     } else if (timerInterval) {
+                        // Para o timer se a votação não estiver mais aberta ou o tempo zerou
                         clearInterval(timerInterval);
                         timerInterval = null;
                         document.getElementById('timer-display').textContent = data.status === 'ABERTO' ? "TEMPO ESGOTADO" : "VOTAÇÃO ENCERRADA";
+                    } else if (data.status === 'FECHADO') {
+                        // Garante que o display mostre encerrado se estiver fechado
+                        document.getElementById('timer-display').textContent = "VOTAÇÃO ENCERRADA";
                     }
 
                     if (data.status === 'FECHADO') {
